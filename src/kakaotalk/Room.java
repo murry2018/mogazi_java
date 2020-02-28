@@ -3,6 +3,8 @@ package kakaotalk;
 import kakaotalk.action.*;
 
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -17,9 +19,10 @@ public class Room implements Iterable<Member> {
     final Member root;         // 루트 멤버(AdminAction을 가지고 있는 멤버. 그 어떤 멤버도 아님.)
     Action lastAction;         // 마지막으로 삽입된 액션.
 
-    public Room(String title, LocalDateTime begin, int nEntry) {
+    public Room(String title,LocalDateTime end, int nEntry) {
         this.title = title;
-        this.begin = begin;
+        this.begin = null;
+        this.end = end;
         this.nEntry = nEntry;
         members = new HashMap<>();
         root = new Member("", true, begin);
@@ -57,7 +60,8 @@ public class Room implements Iterable<Member> {
             nCancel++;
         else if (action instanceof Rebelling)
             nRevel++;
-        end = ((Action) action).getTime();
+        if (begin == null)
+            begin = ((Action) action).getTime();
     }
 
     public void insertAction(String name, Action action, boolean shouldBeExist) {
@@ -85,7 +89,8 @@ public class Room implements Iterable<Member> {
             }
         }
         member.insertAction(action);
-        end = action.getTime();
+        if (begin == null)
+            begin = action.getTime();
     }
 
     // nullable
@@ -115,5 +120,17 @@ public class Room implements Iterable<Member> {
 
     public Member getRoot() {
         return root;
+    }
+
+    public LocalDateTime getBegin() {
+        return begin;
+    }
+
+    public LocalDateTime getEnd() {
+        return end;
+    }
+
+    public long getDays() {
+        return ChronoUnit.DAYS.between(begin.toLocalDate(), end.toLocalDate());
     }
 }
