@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 // '[유저명]님을 내보냈습니다' 꼴의 패턴으로 나타난다.
 public class Kicking extends Action implements AdminAction {
     final String content;
-    Kicking(LocalDateTime time, String who) {
+    public Kicking(LocalDateTime time, String who) {
         super(time);
         content = who;
     }

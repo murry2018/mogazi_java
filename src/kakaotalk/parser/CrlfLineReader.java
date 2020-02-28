@@ -1,8 +1,7 @@
 package kakaotalk.parser;
 
-import java.io.EOFException;
+import java.io.IOException;
 
-// TODO: DefaultCrlfLineReader 클래스 구현
 public interface CrlfLineReader {
-    String readLine() throws EOFException;
+    String readLine() throws IOException;
 }

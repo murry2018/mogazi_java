@@ -1,6 +1,7 @@
 package kakaotalk.parser;
 
-import kakaotalk.action.Action;
+import kakaotalk.Room;
+
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -17,11 +18,11 @@ class PatternActionMatcher {
         timeProvider = provider;
     }
 
-    void addMatcher(Pattern pattern, ActionProvider provider) {
+    void addMatcher(Pattern pattern, ActionInserter provider) {
         tasks.add(new OnMatch(pattern, provider));
     }
 
-    Action makeAction(String s) throws IllegalStateException {
+    void makeAction(String s, Room room) throws IllegalStateException {
         Matcher m = timePattern.matcher(s);
         if (!m.find())
             throw new IllegalStateException("Missing time: " + s);
@@ -30,8 +31,10 @@ class PatternActionMatcher {
         for (OnMatch task : tasks) {
             m = task.pattern.matcher(s);
             m.region(messageStart, s.length());
-            if (m.matches())
-                return task.provider.onMatch(time, m);
+            if (m.matches()) {
+                task.provider.onMatch(room, time, m);
+                return;
+            }
         }
         throw new IllegalStateException("Nothing matches: " + s);
     }

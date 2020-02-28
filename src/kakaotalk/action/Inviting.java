@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 // '[유저명]님이 [다른유저]님을 초대했습니다' 꼴의 패턴으로 나타난다.
 public class Inviting extends Action implements ActiveAction {
     final String content;
-    Inviting(LocalDateTime time, String who) {
+    public Inviting(LocalDateTime time, String who) {
         super(time);
         content = who;
     }

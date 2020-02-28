@@ -6,7 +6,6 @@ import kakaotalk.action.Kicked;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Member {
     String name;             // 이용자명

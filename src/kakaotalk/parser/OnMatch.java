@@ -4,8 +4,8 @@ import java.util.regex.Pattern;
 
 class OnMatch {
     final Pattern pattern;
-    final ActionProvider provider;
-    OnMatch(Pattern pattern, ActionProvider provider) {
+    final ActionInserter provider;
+    OnMatch(Pattern pattern, ActionInserter provider) {
         this.pattern = pattern;
         this.provider = provider;
     }

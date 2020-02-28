@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 // '[유저명] : [대화명]' 꼴의 패턴으로 나타난다.
 public class Chatting extends Action implements ActiveAction, ChatAction{
     final String content;  // 대화 내용
-    Chatting(LocalDateTime time, String content) {
+    public Chatting(LocalDateTime time, String content) {
         super(time);
         this.content = content;
     }

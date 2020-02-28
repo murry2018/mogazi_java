@@ -1,11 +1,11 @@
 package kakaotalk.parser;
 
-import kakaotalk.action.Action;
+import kakaotalk.Room;
 
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 
-interface ActionProvider {
+interface ActionInserter {
     // matches 완료한 Matcher 객체가 입력된다.
-    Action onMatch(LocalDateTime time, Matcher matcher);
+    void onMatch(Room room, LocalDateTime time, Matcher matcher) throws IllegalStateException;
 }

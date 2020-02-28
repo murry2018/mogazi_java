@@ -45,8 +45,9 @@ public class Room implements Iterable<Member> {
             nHide++;
         else if (action instanceof Canceling)
             nCancel++;
-        else if (action instanceof Reveling)
+        else if (action instanceof Rebelling)
             nRevel++;
+        end = ((Action) action).getTime();
     }
 
     public void insertAction(String name, Action action, boolean shouldBeExist) {
@@ -72,6 +73,7 @@ public class Room implements Iterable<Member> {
                 member.setExist(shouldBeExist);
             }
         }
+        end = action.getTime();
     }
 
     // nullable
