@@ -4,6 +4,8 @@ import kakaotalk.Room;
 import kakaotalk.action.*;
 
 import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,21 +33,32 @@ public class Parser {
     final static Pattern timep =
             compile("^(\\d{4,})년 (\\d{1,2})월 (\\d{1,2})일 (오전|오후) (\\d{1,2}):(\\d{1,2})(?:, )?");
     TimeProvider timeProvider =
-            m -> LocalDateTime.of(
-                    Integer.parseInt(m.group(1)),
-                    Integer.parseInt(m.group(2)),
-                    Integer.parseInt(m.group(3)),
-                    Integer.parseInt(m.group(5)) +
-                            (m.group(4).equals("오후") ? 12 : 0),
-                    Integer.parseInt(m.group(6))
-            );
+            m -> {
+                int year = Integer.parseInt(m.group(1)),
+                    mon  = Integer.parseInt(m.group(2)),
+                    day  = Integer.parseInt(m.group(3)),
+                    hour = Integer.parseInt(m.group(5)),
+                    min  = Integer.parseInt(m.group(6));
+                if (m.group(4).equals("오후") && hour != 12)
+                    hour += 12;
+                return LocalDateTime.of(year, mon, day, hour, min);
+            };
 
     public Parser(CrlfLineReader reader) {
         this.reader = reader;
         initMatchers();
     }
 
-    public boolean parse1(Room room) throws IllegalStateException, IOException {
+    public Parser(String filename) throws FileNotFoundException {
+        reader = new DefaultCrlfLineReader(new FileInputStream(filename));
+        initMatchers();
+    }
+
+    public String getLastLine() {
+        return currentLine;
+    }
+
+    boolean parse1(Room room) throws IllegalStateException, IOException {
         if (isEOF) return false;
         try {
             currentLine = reader.readLine();
@@ -53,11 +66,19 @@ public class Parser {
             isEOF = true;
             return false;
         }
-        actionMatcher.makeAction(currentLine, room);
+        if (currentLine.length() > 0) {
+            // 날짜가 바뀔 때 빈 라인이 나타난다.
+            // 이 파서는 날짜가 바뀌는 것을 유의미한 데이터로 여기지 않으므로 그런 경우는 스킵한다.
+            try {
+                actionMatcher.makeAction(currentLine, room);
+            } catch (IllegalArgumentException e) { // TODO: MissingTimeException 만들것
+                room.appendToLastChatting(currentLine);
+            }
+        }
         return true;
     }
 
-    private Room parseRoomInfo() throws IllegalStateException, IOException {
+    Room parseRoomInfo() throws IllegalStateException, IOException {
         currentLine = reader.readLine();
         Matcher m = fstp.matcher(currentLine);
         if (!m.matches())
@@ -71,7 +92,7 @@ public class Parser {
             throw new IllegalStateException("Missing room info(2)");
         int timeStart = m.end();
         m = timep.matcher(currentLine).region(timeStart, currentLine.length());
-        if (!m.matches())
+        if (!m.find())
             throw new IllegalStateException("in line(2)\n\tUnexpected time pattern: " + currentLine);
         LocalDateTime begin = timeProvider.onMatch(m);
 
@@ -132,7 +153,7 @@ public class Parser {
                 // 일반 채팅 패턴
                 // group(1): 대화명(반드시 한 줄에 나타나야 하며, 20자 이내이다.)
                 // group(2): 대화내용
-                compile("^([^\\\\n]{1,20}?) : (.*)$"),
+                compile("^([^\\n]{1,20}?) : (.*)$", Pattern.DOTALL),
                 (room, time, m) ->
                     room.insertAction(m.group(1), new Chatting(time, m.group(2)), true)
         );
@@ -190,6 +211,13 @@ public class Parser {
                 // 삭제된 메시지
                 compile("^삭제된 메시지입니다.$"),
                 (room, time, matcher) -> room.insertAction(new Canceling(time))
+        );
+        actionMatcher.addMatcher(
+                // 대화를 기록한 사람이 채팅방에 입장할 때 나타나는 패턴
+                // group(1): 대화명
+                compile("^(.*)님이 들어왔습니다.\\n운영정책을 위반한 메시지로 신고 접수 시 카카오톡 이용에 제한이 있을 수 있습니다. 자세히 보기$"),
+                (room, time, m) ->
+                        room.insertAction(m.group(1), new Joining(time), false)
         );
         actionMatcher.addMatcher(
                 // 방장이 바뀌었을 때 나타나는 패턴

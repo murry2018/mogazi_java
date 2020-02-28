@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 // 읽은 줄의 패턴에 따라 액션 객체를 생성한다.
 class PatternActionMatcher {
-    LinkedList<OnMatch> tasks;
+    LinkedList<OnMatch> tasks = new LinkedList<>();
     Pattern timePattern;
     TimeProvider timeProvider;
 
@@ -22,10 +22,10 @@ class PatternActionMatcher {
         tasks.add(new OnMatch(pattern, provider));
     }
 
-    void makeAction(String s, Room room) throws IllegalStateException {
+    void makeAction(String s, Room room) throws IllegalStateException, IllegalArgumentException {
         Matcher m = timePattern.matcher(s);
         if (!m.find())
-            throw new IllegalStateException("Missing time: " + s);
+            throw new IllegalArgumentException("Missing time: " + s);
         int messageStart = m.end();
         LocalDateTime time = timeProvider.onMatch(m);
         for (OnMatch task : tasks) {

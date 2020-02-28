@@ -15,6 +15,7 @@ public class Room implements Iterable<Member> {
             nRevel = 0;        // 방장이 바뀐 횟수
     int nCancel = 0;           // 이용자들이 자신의 글을 삭제한 횟수
     final Member root;         // 루트 멤버(AdminAction을 가지고 있는 멤버. 그 어떤 멤버도 아님.)
+    Action lastAction;         // 마지막으로 삽입된 액션.
 
     public Room(String title, LocalDateTime begin, int nEntry) {
         this.title = title;
@@ -37,7 +38,16 @@ public class Room implements Iterable<Member> {
         this.title = title;
     }
 
+    public void appendToLastChatting(String content) throws IllegalStateException {
+        if (lastAction instanceof Chatting) {
+            ((Chatting) lastAction).appendToContent(content);
+        } else {
+            throw new IllegalStateException("last action is not a chatting");
+        }
+    }
+
     public void insertAction(AdminAction action) {
+        lastAction = (Action) action;
         root.insertAction((Action) action);
         if (action instanceof Kicking)
             nKick++;
@@ -51,6 +61,7 @@ public class Room implements Iterable<Member> {
     }
 
     public void insertAction(String name, Action action, boolean shouldBeExist) {
+        lastAction = action;
         Member member = members.get(name);
         if (action instanceof EnterAction || action instanceof ExitAction) {
             boolean actionResult = !shouldBeExist;
@@ -73,6 +84,7 @@ public class Room implements Iterable<Member> {
                 member.setExist(shouldBeExist);
             }
         }
+        member.insertAction(action);
         end = action.getTime();
     }
 

@@ -2,6 +2,7 @@
   <dictionary name="User">
     <words>
       <w>crlf</w>
+      <w>mogazi</w>
       <w>nullable</w>
     </words>
   </dictionary>

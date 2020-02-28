@@ -20,7 +20,7 @@ public class DefaultCrlfLineReader implements CrlfLineReader {
                 reader.read(); // 뒤따르는 '\n' 무시
                 return buf.toString();
             }
-            buf.append(c);
+            buf.append((char) c);
         }
         isEOF = true;
         return buf.toString();

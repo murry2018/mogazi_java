@@ -49,5 +49,6 @@ public class Member {
             nAction++;
         if (action instanceof Kicked)
             nKicked++;
+        actions.add(action);
     }
 }
