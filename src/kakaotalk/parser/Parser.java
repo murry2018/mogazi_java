@@ -50,8 +50,7 @@ public class Parser {
     }
 
     public Parser(String filename) throws FileNotFoundException {
-        reader = new DefaultCrlfLineReader(new FileInputStream(filename));
-        initMatchers();
+        this(new DefaultCrlfLineReader(new FileInputStream(filename)));
     }
 
     public String getLastLine() {

@@ -28,17 +28,23 @@ public class Mogazi {
             this.val = val;
         }
     }
-    static final String FILEPATH = "KakaoTalkChats.txt";
     static final int    NQUARTER = 15;       // 상위 n명, 하위 n명의 n
     static final int    NDAYPRINT = 5;       // 말을 많이/적게 했던 x일의 x
     static final int    NMEMB_TOSEP = 7;     // 한 줄에 출력할 이름 수
     public static void main(String[] Args) {
+        boolean readGood = false;
         kakaotalk.parser.Parser parser = null;
-        try {
-            parser = new kakaotalk.parser.Parser(FILEPATH);
-        } catch (FileNotFoundException e) {
-            System.err.println(e.getMessage());
-            System.exit(-1);
+        Scanner reader = new Scanner(System.in);
+        while (!readGood) {
+            System.out.print("카카오톡 대화 내역 파일의 경로: ");
+            String path = reader.nextLine();
+            try {
+                parser = new kakaotalk.parser.Parser(path);
+                readGood = true;
+            } catch (FileNotFoundException e) {
+                System.out.println("그런 파일은 존재하지 않습니다. 다시 입력해주세요.");
+                readGood = false;
+            }
         }
 
         // 채팅방의 통계 정보 수집
@@ -88,6 +94,10 @@ public class Mogazi {
         }
 
         System.out.println();
+        System.out.println("=== 기타 통계 ===");
+        System.out.printf("삭제된 메시지: %d개\n", room.numOfCancel());
+
+        System.out.println();
         System.out.println("=== 말을 가장 많이 했던 날들 ===");
         Iterator<DateVal> dateValIterator = sortedActByDay.descendingIterator();
         for (int i = 0; i < NDAYPRINT; i++) {
@@ -119,13 +129,13 @@ public class Mogazi {
         System.out.println("=== 시간대별 활동비율 ===");
         System.out.println("[오전]");
         for (int i = 0; i < 12; i++) {
-            if (i == 6) System.out.println();
+            if (i > 0 && i % 3 == 0) System.out.println();
             System.out.printf("%d시 : %.1f%% / ", i, 100.0 * ((double) actByTimes[i] / totalActs));
         }
         System.out.println();
         System.out.println("[오후]");
         for (int i = 12; i < 24; i++) {
-            if (i == 18) System.out.println();
+            if (i > 12 && i % 3 == 0) System.out.println();
             System.out.printf("%d시 : %.1f%% / ", i, 100.0 * ((double) actByTimes[i] / totalActs));
         }
         System.out.println();
